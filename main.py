@@ -70,7 +70,9 @@ Provide your analysis in the following EXACT JSON format (no other text, just th
   ],
   "ats_keywords_missing": ["<keyword1>", "<keyword2>", "<keyword3>"],
   "verdict": "<one sentence hiring recommendation>"
-}}"""
+}}
+
+IMPORTANT: Return ONLY the JSON object. No markdown, no code blocks, no explanation. Start with {{ and end with }}."""
 
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
@@ -80,6 +82,9 @@ Provide your analysis in the following EXACT JSON format (no other text, just th
     )
     
     raw = response.choices[0].message.content.strip()
+    raw = re.sub(r'```json\s*', '', raw)
+    raw = re.sub(r'```\s*', '', raw)
+    raw = raw.strip()
     
     # Extract JSON from response
     json_match = re.search(r'\{.*\}', raw, re.DOTALL)
