@@ -1,7 +1,8 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-import fitz  # PyMuPDF
+import io
+from pypdf import PdfReader
 import json
 import re
 import os
@@ -22,12 +23,10 @@ app.add_middleware(
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 def extract_text_from_pdf(file_bytes: bytes) -> str:
-    """Extract text from PDF bytes using PyMuPDF."""
-    doc = fitz.open(stream=file_bytes, filetype="pdf")
+    reader = PdfReader(io.BytesIO(file_bytes))
     text = ""
-    for page in doc:
-        text += page.get_text()
-    doc.close()
+    for page in reader.pages:
+        text += page.extract_text() or ""
     return text.strip()
 
 def analyze_with_groq(resume_text: str, job_description: str) -> dict:
